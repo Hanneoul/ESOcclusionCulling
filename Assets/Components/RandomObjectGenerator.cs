@@ -35,24 +35,42 @@ public class RandomObjectGenerator : MonoBehaviour
             {
                 generator.GenerateObjects();
             }
+            if (GUILayout.Button("Remove All Objects"))
+            {
+                generator.RemoveAllObjects();
+            }
         }
     }
 #endif
 
+    public void RemoveAllObjects()
+    {
+        int childCount = this.transform.childCount;
+
+        Debug.Log(childCount);
+
+        for(int i =0; i< childCount ;i++)
+        {
+            DestroyImmediate(this.transform.GetChild(0).gameObject);
+        }
+    }
+
+
     public void GenerateObjects()
     {
-        // ÀÌ °÷¿¡ Object¸¦ »ý¼ºÇÏ°í ¹èÄ¡ÇÏ´Â ÄÚµå¸¦ ÀÛ¼ºÇÏ¼¼¿ä.
+        // ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Objectï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½ï¿½Ä¡ï¿½Ï´ï¿½ ï¿½Úµå¸¦ ï¿½Û¼ï¿½ï¿½Ï¼ï¿½ï¿½ï¿½.
         for (int i = 0; i < ObjectNumber; i++)
         {
-            // ·£´ýÇÑ À§Ä¡¸¦ »ý¼ºÇÕ´Ï´Ù.
+            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
             Vector3 randomPosition = new Vector3(
                 Random.Range(transform.position.x - transform.localScale.x * 0.5f, transform.position.x + transform.localScale.x * 0.5f),
                 Random.Range(transform.position.y - transform.localScale.y * 0.5f, transform.position.y + transform.localScale.y * 0.5f),
                 Random.Range(transform.position.z - transform.localScale.z * 0.5f, transform.position.z + transform.localScale.z * 0.5f)
             );
 
-            // TargetObject¸¦ »ý¼ºÇÏ°í ·£´ýÇÑ À§Ä¡¿¡ ¹èÄ¡ÇÕ´Ï´Ù.
+            // TargetObjectï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½Õ´Ï´ï¿½.
             GameObject newObject = Instantiate(TargetObject, randomPosition, Quaternion.identity);
+            newObject.transform.SetParent(this.transform);
         }
         
     }
@@ -60,7 +78,7 @@ public class RandomObjectGenerator : MonoBehaviour
 #if UNITY_EDITOR
     private void OnDrawGizmosSelected()
     {
-        // Box ÇüÅÂÀÇ °¡ÀÌµå¶óÀÎÀ» ±×¸³´Ï´Ù.
+        // Box ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ìµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½×¸ï¿½ï¿½Ï´ï¿½.
         Handles.color = Color.yellow;
 
         Vector3 position = transform.position;
