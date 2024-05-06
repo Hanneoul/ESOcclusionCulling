@@ -1,0 +1,100 @@
+#pragma kernel CSMain
+
+struct BoundingBox
+{
+    float3 Center;
+    float3 Scale;
+};
+
+StructuredBuffer<float4> _Vertices;
+StructuredBuffer<BoundingBox> _AABB;
+RWStructuredBuffer<bool> _Visible;
+
+float _LodFactor;   // cs 파일에 수식 계산된거  ->  (screenWidth * 0.5f) / allowPixelError / Mathf.Tan(MainCamera.fieldOfView * 0.5f * Mathf.Deg2Rad;
+float _LodPixelThreshold;
+float4x4 view;
+float4x4 projection;
+
+int screenWidth;
+int screenHeight;
+
+float4 _Point;
+
+[numthreads(?,?,?)]
+void CSMain (uint threadId : SV_DispatchThreadID)
+{
+    // 프러스텀 컬링 수행-----------------------------------
+
+    // 각 쓰레드가 체크할 객체 번호 계산
+    
+    if (threadId >= _AABB.Length())
+        return;
+
+    BoundingBox aabb = _AABB[threadId];
+    float4 minVertex = float4(aabb.Center - aabb.Scale, 1.0f);
+    float4 maxVertex = float4(aabb.Center + aabb.Scale, 1.0f);
+
+    // 바운딩 박스의 정점들을 월드 좌표계에서 뷰 프러스텀 좌표계로 변환
+    float4 transformedVertices[8];
+    for (int i = 0; i < 8; i++)
+    {
+        int vertexIndex = (threadId * 8) + i;
+        transformedVertices[i] = mul(view, float4(_Vertices[vertexIndex].xyz, 1.0f));
+    }
+
+    // 바운딩 박스가 뷰 프러스텀 안에 있는지 체크
+    bool isVisible = true;
+    for (int i = 0; i < 6; i++)  // 뷰 프러스텀의 6개 평면에 대해서 체크
+    {
+        float4 plane = mul(projection, view)[i];  // 뷰 프러스텀의 i번째 평면
+        float3 normal = plane.xyz;
+        float3 point = plane.w * normal;
+
+        // 바운딩 박스의 정점들이 평면과 모두 양수인지, 음수인지 체크
+        bool isInside = true;
+        for (int j = 0; j < 8; j++)
+        {
+            float3 vertexPos = transformedVertices[j].xyz;
+            float dist = dot(normal, vertexPos - point);
+            if (dist < 0.0f)
+            {
+                isInside = false;
+                break;
+            }
+        }
+
+        if (isInside == false)
+        {
+            isVisible = false;
+            break;
+        }
+    }
+
+    if(isVisible)
+    {
+        // 결과를 Visible 배열에 저장
+        _Visible[threadId] = isVisible;
+    }
+    else
+    {
+        _Visible[threadId] = isVisible;
+        return;
+    }
+
+
+
+    // LOD 수행-----------------------------------
+
+    // get the current object's AABB
+    BoundingBox aabb = _AABB[threadId];
+    distance = length(aabb.scale) * _LodFactor;
+    
+    if( distance(_camPos,aabb.Center) > distance)
+    {
+        _Visible[threadId] = false;
+        return;
+    }
+
+
+
+}
