@@ -217,7 +217,7 @@ public class LODCullingManager : MonoBehaviour
             VFPlanes[i] = new Vector4(frustumPlanes[i].normal.x,frustumPlanes[i].normal.y, frustumPlanes[i].normal.z, frustumPlanes[i].distance );
         }
 
-        _ViewFrustum.SetData(VFPlanes.ToArray());       
+        _ViewFrustum.SetData(VFPlanes.ToArray());
 
         // // 디버깅 : Frustum Planes 출력
         // for (int i = 0; i < 6; i++)
